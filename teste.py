@@ -2,7 +2,7 @@ import csv
 import numpy as np
 
 # Abrir o arquivo CSV e ler os dados
-with open('/home/william/Documentos/IA/portas logicas/problemAND.csv', 'r', encoding='utf-8-sig') as file:
+with open('portas logicas/problemAND.csv', 'r', encoding='utf-8-sig') as file:
     reader = csv.reader(file)
     data = list(reader)
 
