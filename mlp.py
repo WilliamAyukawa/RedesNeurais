@@ -20,14 +20,7 @@ def get_letra(array):
     Converte o vetor em letra
     """
     # Verificar a proximidade de cada valor com 0 ou 1
-    entrada = [round(val, 3) for val in array]
-    linha = []
-
-    for val in entrada:
-        if val < 0.2 or val > 0.8:
-            linha.append(round(val))
-        else:
-            linha.append(val)
+    linha = [0 if val < 0.5 else 1 for val in array]
 
     # Classificar em letras de acordo com os valores do vetor
     if linha == [1, 0, 0, 0, 0, 0, 0]:
