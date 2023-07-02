@@ -24,7 +24,7 @@ def get_letra(array):
     linha = []
 
     for val in entrada:
-        if val < 0.4 or val > 0.6:
+        if val < 0.2 or val > 0.8:
             linha.append(round(val))
         else:
             linha.append(val)
@@ -69,13 +69,13 @@ def sigmoid_derivative(x):
     return x * (1 - x)
 
 # Define o número de iterações de treinamento
-EPOCAS = 100000
+EPOCAS = 30000
 
 # Define a taxa de aprendizagem
-TAXA_APRENDIZADO = 0.12
+TAXA_APRENDIZADO = 0.2
 
 # Define o número de neurônios na camada escondida
-NUM_NEURONIOS_CAMADA_ESCONDIDA = 20
+NUM_NEURONIOS_CAMADA_ESCONDIDA = 12
 
 # Inicializa os pesos aleatoriamente
 pesos1 = np.random.random((X.shape[1], NUM_NEURONIOS_CAMADA_ESCONDIDA))
@@ -113,7 +113,5 @@ output = sigmoid(np.dot(layer1_output, pesos2))
 
 print()
 for i in range(Xteste.shape[0]):
-    valorEsperado = get_letra(Yteste[i, :])
-    valorPrevisto = get_letra(output[i, :])
-    print("Linha {}: Valor esperado[{}], Valor previsto: [{}], Correto?{}".format(i+1, valorEsperado, valorPrevisto, (valorEsperado==valorPrevisto)))
+    print("Linha {}: Valor esperado[{}], Valor previsto: [{}]".format(i+1, get_letra(Yteste[i, :]), get_letra(output[i, :])))
     print()
