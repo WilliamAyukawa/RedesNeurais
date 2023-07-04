@@ -77,31 +77,68 @@ TAXA_APRENDIZADO = 0.2
 # Define o número de neurônios na camada escondida
 NUM_NEURONIOS_CAMADA_ESCONDIDA = 12
 
+# Dividir os dados em k-folds para validação cruzada
+k = 5  # número de folds
+tamanho_fold = len(X) // k
+
+# Inicializar variáveis para controle da parada antecipada
+TOLERANCIA_PERDA = 5
+melhor_valor_perda = np.inf
+epocas_consecutivas_sem_melhora = 1
+
 # Inicializa os pesos aleatoriamente
 pesos1 = np.random.random((X.shape[1], NUM_NEURONIOS_CAMADA_ESCONDIDA))
 pesos2 = np.random.random((NUM_NEURONIOS_CAMADA_ESCONDIDA, Y.shape[1]))
 
-# Loop de treinamento
-for i in range(EPOCAS):
-    # Forward pass
-    layer1_output = sigmoid(np.dot(X, pesos1))
-    layer2_output = sigmoid(np.dot(layer1_output, pesos2))
-    
-    # Calcula o erro na camada de saída
-    layer2_error = Y - layer2_output
-    
-    # Calcula o gradiente descendente na camada de saída
-    layer2_gradient = layer2_error * sigmoid_derivative(layer2_output)
-    
-    # Calcula o erro na camada oculta
-    layer1_error = layer2_gradient.dot(pesos2.T)
-    
-    # Calcula o gradiente descendente na camada oculta
-    layer1_gradient = layer1_error * sigmoid_derivative(layer1_output)
-    
-    # Atualiza os pesos
-    pesos2 += TAXA_APRENDIZADO * layer1_output.T.dot(layer2_gradient)
-    pesos1 += TAXA_APRENDIZADO * X.T.dot(layer1_gradient)
+# Loop de treinamento com validação cruzada
+for fold in range(k):
+    # Separar os dados em fold de validação e fold de treinamento
+    valor_indices = range(fold * tamanho_fold, (fold + 1) * tamanho_fold)
+    indices_treinamento = [i for i in range(X.shape[0]) if i not in tamanho_fold]
+
+    X_treino, X_validacao = X[indices_treinamento], X[valor_indices]
+    Y_treino, Y_validacao = Y[indices_treinamento], Y[valor_indices]
+    # Loop de treinamento
+    for i in range(EPOCAS):
+        # Forward pass
+        layer1_output = sigmoid(np.dot(X, pesos1))
+        layer2_output = sigmoid(np.dot(layer1_output, pesos2))
+
+        # Calcular a perda no conjunto de treinamento
+        perda_no_treinamento = np.mean(np.square(Y - layer2_output))
+
+        # Calcular a perda no conjunto de validação
+        layer1_output_val = sigmoid(np.dot(X_validacao, pesos1))
+        layer2_output_val = sigmoid(np.dot(layer1_output_val, pesos2))
+        valor_perda = np.mean(np.square(Y_validacao - layer2_output_val))
+
+        # Verificar se houve melhora na perda de validação
+        if valor_perda < melhor_valor_perda:
+            melhor_valor_perda = valor_perda
+            epocas_consecutivas_sem_melhora = 0
+        else:
+            epocas_consecutivas_sem_melhora += 1
+
+        # Verificar se o treinamento deve ser interrompido
+        if epocas_consecutivas_sem_melhora >= TOLERANCIA_PERDA:
+            print("Treinamento interrompido devido à falta de melhora na perda de validação.")
+            break
+        
+        # Calcula o erro na camada de saída
+        layer2_error = Y - layer2_output
+        
+        # Calcula o gradiente descendente na camada de saída
+        layer2_gradient = layer2_error * sigmoid_derivative(layer2_output)
+        
+        # Calcula o erro na camada oculta
+        layer1_error = layer2_gradient.dot(pesos2.T)
+        
+        # Calcula o gradiente descendente na camada oculta
+        layer1_gradient = layer1_error * sigmoid_derivative(layer1_output)
+        
+        # Atualiza os pesos
+        pesos2 += TAXA_APRENDIZADO * layer1_output.T.dot(layer2_gradient)
+        pesos1 += TAXA_APRENDIZADO * X.T.dot(layer1_gradient)
 
 # Testa o modelo treinado
 layer1_output = sigmoid(np.dot(X, pesos1))

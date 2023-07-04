@@ -2,14 +2,14 @@ import csv
 import numpy as np
 
 # Abrir o arquivo CSV e ler os dados
-with open('caracteres-Fausett/customLimpo.csv', 'r', encoding='utf-8-sig') as file:
+with open('caracteres-Fausett/limpo_e_ruido1.csv', 'r', encoding='utf-8-sig') as file:
     reader = csv.reader(file)
     data = list(reader)
 
 # Converter a lista em um numpy array
 data_array = np.array(data).astype(int)
 
-with open('caracteres-Fausett/customRuido.csv', 'r', encoding='utf-8-sig') as file:
+with open('caracteres-Fausett/customRuido2.csv', 'r', encoding='utf-8-sig') as file:
     reader = csv.reader(file)
     data = list(reader)
 
@@ -72,10 +72,10 @@ def sigmoid_derivative(x):
 EPOCAS = 100000
 
 # Define a taxa de aprendizagem
-TAXA_APRENDIZADO = 0.12
+TAXA_APRENDIZADO = 0.1
 
 # Define o número de neurônios na camada escondida
-NUM_NEURONIOS_CAMADA_ESCONDIDA = 20
+NUM_NEURONIOS_CAMADA_ESCONDIDA = 18
 
 # Inicializa os pesos aleatoriamente
 pesos1 = np.random.random((X.shape[1], NUM_NEURONIOS_CAMADA_ESCONDIDA))
