@@ -69,7 +69,7 @@ def sigmoid_derivative(x):
     return x * (1 - x)
 
 # Define o número de iterações de treinamento
-EPOCAS = 200000
+EPOCAS = 20000
 
 # Define a taxa de aprendizagem
 TAXA_APRENDIZADO = 0.1
@@ -79,10 +79,10 @@ NUM_NEURONIOS_CAMADA_ESCONDIDA = 18
 
 # Dividir os dados em k-folds para validação cruzada
 k = 5  # número de folds
-tamanho_fold = X.shape[1] // k
+tamanho_fold = X.shape[0] // k
 
 # Inicializar variáveis para controle da parada antecipada
-TOLERANCIA_PERDA = 200
+TOLERANCIA_PERDA = 100
 melhor_valor_perda = np.inf
 epocas_consecutivas_sem_melhora = 0
 
@@ -93,12 +93,16 @@ pesos2 = np.random.random((NUM_NEURONIOS_CAMADA_ESCONDIDA, Y.shape[1]))
 # Loop de treinamento com validação cruzada
 for fold in range(k):
     # Separar os dados em fold de validação e fold de treinamento
-    indices_validacao = range(fold * tamanho_fold, (fold + 1) * tamanho_fold)
-    #indices_treinamento = [i for i in range(X.shape[1]) if i not in tamanho_fold]
-    indices_treinamento = np.setdiff1d(X.shape[1], indices_validacao)
+    stop_range = ((fold + 1) * tamanho_fold) - 1
+    if(stop_range > X.shape[0]):
+        stop_range = X.shape[0]
 
-    X_treino, X_validacao = X[np.isin(X[:, 0], indices_treinamento)], X[np.isin(X[:, 0], indices_validacao)]
-    Y_treino, Y_validacao = Y[np.isin(Y[:, 0], indices_treinamento)], Y[np.isin(Y[:, 0], indices_validacao)]
+    indices_validacao = range(fold * tamanho_fold, stop_range)
+    indices_treinamento = np.setdiff1d(range(0, X.shape[0]), indices_validacao)
+
+    X_treino, X_validacao = X[indices_treinamento, :], X[indices_validacao, :]
+    Y_treino, Y_validacao = Y[indices_treinamento, :], Y[indices_validacao, :]
+
     # Loop de treinamento
     for i in range(EPOCAS):
         # Forward pass
@@ -123,7 +127,7 @@ for fold in range(k):
         # Verificar se o treinamento deve ser interrompido
         if epocas_consecutivas_sem_melhora >= TOLERANCIA_PERDA:
             epocas_consecutivas_sem_melhora = 0
-            print("Treinamento interrompido devido à falta de melhora na perda de validação. {}".format(i))
+            print("Treinamento interrompido devido à falta de melhora na perda de validação. Época {}, Fold {}".format(i, fold))
             break
         
         # Calcula o erro na camada de saída
