@@ -2,7 +2,7 @@ import csv
 import numpy as np
 
 # Abrir o arquivo CSV e ler os dados
-with open('caracteres-Fausett/customLimpo.csv', 'r', encoding='utf-8-sig') as file:
+with open('caracteres-Fausett/limpo_e_ruido1.csv', 'r', encoding='utf-8-sig') as file:
     reader = csv.reader(file)
     data = list(reader)
 
@@ -69,22 +69,22 @@ def sigmoid_derivative(x):
     return x * (1 - x)
 
 # Define o número de iterações de treinamento
-EPOCAS = 30000
+EPOCAS = 200000
 
 # Define a taxa de aprendizagem
-TAXA_APRENDIZADO = 0.2
+TAXA_APRENDIZADO = 0.1
 
 # Define o número de neurônios na camada escondida
-NUM_NEURONIOS_CAMADA_ESCONDIDA = 12
+NUM_NEURONIOS_CAMADA_ESCONDIDA = 18
 
 # Dividir os dados em k-folds para validação cruzada
 k = 5  # número de folds
-tamanho_fold = len(X) // k
+tamanho_fold = X.shape[1] // k
 
 # Inicializar variáveis para controle da parada antecipada
-TOLERANCIA_PERDA = 5
+TOLERANCIA_PERDA = 200
 melhor_valor_perda = np.inf
-epocas_consecutivas_sem_melhora = 1
+epocas_consecutivas_sem_melhora = 0
 
 # Inicializa os pesos aleatoriamente
 pesos1 = np.random.random((X.shape[1], NUM_NEURONIOS_CAMADA_ESCONDIDA))
@@ -93,11 +93,12 @@ pesos2 = np.random.random((NUM_NEURONIOS_CAMADA_ESCONDIDA, Y.shape[1]))
 # Loop de treinamento com validação cruzada
 for fold in range(k):
     # Separar os dados em fold de validação e fold de treinamento
-    valor_indices = range(fold * tamanho_fold, (fold + 1) * tamanho_fold)
-    indices_treinamento = [i for i in range(X.shape[0]) if i not in tamanho_fold]
+    indices_validacao = range(fold * tamanho_fold, (fold + 1) * tamanho_fold)
+    #indices_treinamento = [i for i in range(X.shape[1]) if i not in tamanho_fold]
+    indices_treinamento = np.setdiff1d(X.shape[1], indices_validacao)
 
-    X_treino, X_validacao = X[indices_treinamento], X[valor_indices]
-    Y_treino, Y_validacao = Y[indices_treinamento], Y[valor_indices]
+    X_treino, X_validacao = X[np.isin(X[:, 0], indices_treinamento)], X[np.isin(X[:, 0], indices_validacao)]
+    Y_treino, Y_validacao = Y[np.isin(Y[:, 0], indices_treinamento)], Y[np.isin(Y[:, 0], indices_validacao)]
     # Loop de treinamento
     for i in range(EPOCAS):
         # Forward pass
@@ -121,7 +122,8 @@ for fold in range(k):
 
         # Verificar se o treinamento deve ser interrompido
         if epocas_consecutivas_sem_melhora >= TOLERANCIA_PERDA:
-            print("Treinamento interrompido devido à falta de melhora na perda de validação.")
+            epocas_consecutivas_sem_melhora = 0
+            print("Treinamento interrompido devido à falta de melhora na perda de validação. {}".format(i))
             break
         
         # Calcula o erro na camada de saída

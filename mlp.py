@@ -69,7 +69,7 @@ def sigmoid_derivative(x):
     return x * (1 - x)
 
 # Define o número de iterações de treinamento
-EPOCAS = 100000
+EPOCAS = 200000
 
 # Define a taxa de aprendizagem
 TAXA_APRENDIZADO = 0.1
