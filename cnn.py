@@ -1,53 +1,37 @@
+import os
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist import input_data
+from tensorflow.keras.datasets import mnist
 
-mnist = input_data.read_data_sets("MNIST_data", one_hot=True)
+# Carregar o conjunto de dados MNIST
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-# placeholders:
-x = tf.placeholder(dtype=tf.float32, shape=[None, 784])
-y = tf.placeholder(dtype=tf.float32, shape=[None, 10])
+# Pré-processamento dos dados
+x_train = x_train.reshape(-1, 28, 28, 1) / 255.0
+x_test = x_test.reshape(-1, 28, 28, 1) / 255.0
+y_train = tf.keras.utils.to_categorical(y_train, num_classes=10)
+y_test = tf.keras.utils.to_categorical(y_test, num_classes=10)
 
-# variables (parameters)
-w1 = tf.Variable(tf.random_normal(shape=[784, 200], stddev=0.1))
-b1 = tf.Variable(tf.constant(0.1, shape=[200]))
+# Definir a arquitetura da CNN
+model = tf.keras.Sequential([
+    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(30, activation='relu'),
+    tf.keras.layers.Dense(10, activation='softmax')
+])
 
-w2 = tf.Variable(tf.random_normal(shape=[200, 100], stddev=0.1))
-b2 = tf.Variable(tf.constant(0.1, shape=[100]))
+# Compilar o modelo
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-w3 = tf.Variable(tf.random_normal(shape=[100, 10], stddev=0.1))
-b3 = tf.Variable(tf.constant(0.1, shape=[10]))
+# Treinar o modelo
+model.fit(x_train, y_train, batch_size=64, epochs=10, validation_data=(x_test, y_test))
 
-# model:
-z1 = tf.matmul(x, w1) + b1
-y1 = tf.nn.relu(z1)
+# Avaliar o modelo
+_, accuracy = model.evaluate(x_test, y_test)
+print('Acurácia no conjunto de teste:', accuracy)
 
-z2 = tf.matmul(y1, w2) + b2
-y2 = tf.nn.relu(z2)
-
-z3 = tf.matmul(y2, w3) + b3
-y_ = tf.nn.softmax(z3)
-
-error = tf.reduce_sum(-(y*tf.log(y_ + 0.00001)))
-
-prediction = tf.equal(tf.argmax(y, axis=1), tf.argmax(y_, axis=1))
-acc = tf.reduce_mean(tf.cast(prediction, tf.float32))
-
-optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.005)
-train_step = optimizer.minimize(error)
-
-with tf.Session() as sess:
-
-    sess.run(tf.global_variables_initializer())
-
-    for k in range(20000):
-
-        x_batch, y_batch = mnist.train.next_batch(100)
-
-        step, e = sess.run([train_step, error], feed_dict={x: x_batch, y: y_batch})
-
-        if k % 100 == 0:
-            print("Step", k, 'Error:', e)
-
-    accuracy = sess.run(acc, feed_dict={x: mnist.test.images,
-                                        y: mnist.test.labels})
-    print("Test acc:", accuracy)
+# Escrever os resultados em um arquivo de texto
+with open('resultados.txt', 'w') as file:
+    file.write('Acurácia no conjunto de teste: {}\n'.format(accuracy))
+    file.write('Histórico de treinamento:\n')
+    file.write(str(history.history))

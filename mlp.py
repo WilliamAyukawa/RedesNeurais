@@ -1,3 +1,4 @@
+import os
 import csv
 import numpy as np
 
@@ -69,7 +70,7 @@ def sigmoid_derivative(x):
     return x * (1 - x)
 
 # Define o número de iterações de treinamento
-EPOCAS = 200000
+EPOCAS = 20000
 
 # Define a taxa de aprendizagem
 TAXA_APRENDIZADO = 0.1
@@ -81,39 +82,62 @@ NUM_NEURONIOS_CAMADA_ESCONDIDA = 18
 pesos1 = np.random.random((X.shape[1], NUM_NEURONIOS_CAMADA_ESCONDIDA))
 pesos2 = np.random.random((NUM_NEURONIOS_CAMADA_ESCONDIDA, Y.shape[1]))
 
-# Loop de treinamento
-for i in range(EPOCAS):
-    # Forward pass
-    layer1_output = sigmoid(np.dot(X, pesos1))
-    layer2_output = sigmoid(np.dot(layer1_output, pesos2))
-    
-    # Calcula o erro na camada de saída
-    layer2_error = Y - layer2_output
-    
-    # Calcula o gradiente descendente na camada de saída
-    layer2_gradient = layer2_error * sigmoid_derivative(layer2_output)
-    
-    # Calcula o erro na camada oculta
-    layer1_error = layer2_gradient.dot(pesos2.T)
-    
-    # Calcula o gradiente descendente na camada oculta
-    layer1_gradient = layer1_error * sigmoid_derivative(layer1_output)
-    
-    # Atualiza os pesos
-    pesos2 += TAXA_APRENDIZADO * layer1_output.T.dot(layer2_gradient)
-    pesos1 += TAXA_APRENDIZADO * X.T.dot(layer1_gradient)
+# Escrever os hiperparametros em um arquivo de texto
+with open('hiperparametrosMlp.txt', 'w') as file:
+    file.write("Hiperparametros: \n")
+    file.write("    Epocas: {} \n".format(EPOCAS))
+    file.write("    Taxa de aprendizado: {} \n".format(TAXA_APRENDIZADO))
+    file.write("    Neurônios na camada escondida: {} \n".format(NUM_NEURONIOS_CAMADA_ESCONDIDA))
+
+
+# Escrever os pesos iniciais em um arquivo de texto
+np.savetxt("pesos1IniciaisMlp.txt", pesos1, delimiter=',', fmt='%.3f')
+np.savetxt("pesos2IniciaisMlp.txt", pesos2, delimiter=',', fmt='%.3f')
+
+# Escrever os erros em um arquivo de texto
+with open('errosMlp.txt', 'w') as file:
+    # Loop de treinamento
+    for i in range(EPOCAS):
+
+        if(i % 1000 == 0):
+            print("Iteracao {}".format(i))
+
+        # Forward pass
+        layer1_output = sigmoid(np.dot(X, pesos1))
+        layer2_output = sigmoid(np.dot(layer1_output, pesos2))
+        
+        # Calcula o erro na camada de saída
+        layer2_error = Y - layer2_output
+
+        file.write("Iteracao {} -> Valor erro: {} \n".format(i, layer2_error))
+        
+        # Calcula o gradiente descendente na camada de saída
+        layer2_gradient = layer2_error * sigmoid_derivative(layer2_output)
+        
+        # Calcula o erro na camada oculta
+        layer1_error = layer2_gradient.dot(pesos2.T)
+        
+        # Calcula o gradiente descendente na camada oculta
+        layer1_gradient = layer1_error * sigmoid_derivative(layer1_output)
+        
+        # Atualiza os pesos
+        pesos2 += TAXA_APRENDIZADO * layer1_output.T.dot(layer2_gradient)
+        pesos1 += TAXA_APRENDIZADO * X.T.dot(layer1_gradient)
+
+# Escrever os pesos finais em um arquivo de texto
+np.savetxt("pesos1FinaisMlp.txt", pesos1, delimiter=',', fmt='%.3f')
+np.savetxt("pesos2FinaisMlp.txt", pesos2, delimiter=',', fmt='%.3f')
 
 # Testa o modelo treinado
-layer1_output = sigmoid(np.dot(X, pesos1))
-output = sigmoid(np.dot(layer1_output, pesos2))
-
-
 layer1_output = sigmoid(np.dot(Xteste, pesos1))
 output = sigmoid(np.dot(layer1_output, pesos2))
 
-print()
-for i in range(Xteste.shape[0]):
-    valorEsperado = get_letra(Yteste[i, :])
-    valorPrevisto = get_letra(output[i, :])
-    print("Linha {}: Valor esperado[{}], Valor previsto: [{}], Correto?{}".format(i+1, valorEsperado, valorPrevisto, (valorEsperado==valorPrevisto)))
+# Escrever os pesos finais em um arquivo de texto
+with open('saidaMlp.txt', 'w') as file:
     print()
+    for i in range(Xteste.shape[0]):
+        valorEsperado = get_letra(Yteste[i, :])
+        valorPrevisto = get_letra(output[i, :])
+        print("Linha {}: Valor esperado[{}], Valor previsto: [{}], Correto?{} | {}".format(i+1, valorEsperado, valorPrevisto, (valorEsperado==valorPrevisto), output[i, :]))
+        file.write("Linha {}: Valor esperado[{}], Valor previsto: [{}], Correto?{} | {} \n".format(i+1, valorEsperado, valorPrevisto, (valorEsperado==valorPrevisto), output[i, :]))
+        print()
