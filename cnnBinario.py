@@ -78,7 +78,7 @@ for layer in model.layers:
     pesos_iniciais.append(layer.get_weights())
 
 # Escrever os resultados em um arquivo de texto
-with open('cnnVal.txt', 'w') as file:
+with open('cnnValBinario.txt', 'w') as file:
     # Loop sobre os folds
     for treino_index, validacao_index in folds.split(x_treino):
         # Dividir os dados em fold de treinamento e fold de validação

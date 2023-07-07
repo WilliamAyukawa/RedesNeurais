@@ -146,10 +146,12 @@ with open('saidaMlp.txt', 'w') as file:
         array_esperado = np.append(array_esperado, valorEsperado)
         array_previsto = np.append(array_previsto, valorPrevisto)
         print("Linha {}: Valor esperado[{}], Valor previsto: [{}], Correto?{} | {}".format(i+1, valorEsperado, valorPrevisto, (valorEsperado==valorPrevisto), output[i, :]))
-        file.write("Linha {}: Valor esperado[{}], Valor previsto: [{}], Correto?{} | {} \n".format(i+1, valorEsperado, valorPrevisto, (valorEsperado==valorPrevisto), output[i, :]))
+        output_formatado = ["{:.5f}".format(num) for num in output[i, :]]
+        file.write("Linha {}: Valor esperado[{}], Valor previsto: [{}], Correto?{} | {} \n".format(i+1, valorEsperado, valorPrevisto, (valorEsperado==valorPrevisto), output_formatado))
         print()
 
-# Calcular a matriz de confusão
-matriz = confusion_matrix(array_esperado, array_previsto)
-
-print(matriz)
+    # Calcular a matriz de confusão
+    matriz = confusion_matrix(array_esperado, array_previsto)
+    print(matriz)
+    file.write("Matriz confusao: \n")
+    file.write("{}".format(matriz))

@@ -12,7 +12,7 @@ with open('caracteres-Fausett/limpo_e_ruido1.csv', 'r', encoding='utf-8-sig') as
 # Converter a lista em um numpy array
 data_array = np.array(data).astype(int)
 
-with open('caracteres-Fausett/customRuido.csv', 'r', encoding='utf-8-sig') as file:
+with open('caracteres-Fausett/customRuido2.csv', 'r', encoding='utf-8-sig') as file:
     reader = csv.reader(file)
     data = list(reader)
 
@@ -85,7 +85,7 @@ k = 5  # número de folds
 tamanho_fold = X.shape[0] // k
 
 # Inicializar variáveis para controle da parada antecipada
-TOLERANCIA_PERDA = 50
+TOLERANCIA_PERDA = 100
 melhor_valor_perda = np.inf
 epocas_consecutivas_sem_melhora = 0
 
