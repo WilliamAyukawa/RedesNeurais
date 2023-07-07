@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+from sklearn.metrics import confusion_matrix
 
 np.set_printoptions(precision=4)
 
@@ -84,7 +85,7 @@ k = 5  # número de folds
 tamanho_fold = X.shape[0] // k
 
 # Inicializar variáveis para controle da parada antecipada
-TOLERANCIA_PERDA = 100
+TOLERANCIA_PERDA = 50
 melhor_valor_perda = np.inf
 epocas_consecutivas_sem_melhora = 0
 
@@ -177,12 +178,25 @@ np.savetxt("pesos2FinaisMlpVal.txt", pesos2, delimiter=',', fmt='%.3f')
 layer1_output = sigmoid(np.dot(Xteste, pesos1))
 output = sigmoid(np.dot(layer1_output, pesos2))
 
+#Variáveis para criar matriz de confusão
+array_esperado = np.array([])
+array_previsto = np.array([])
+
 # Escrever os pesos finais em um arquivo de texto
 with open('saidaMlpVal.txt', 'w') as file:
     print()
     for i in range(Xteste.shape[0]):
-        print("Linha {}: Letra esperada[{}], Letra prevista: [{}]".format(i+1, get_letra(Yteste[i, :]), get_letra(output[i, :])))
+        valorEsperado = get_letra(Yteste[i, :])
+        valorPrevisto = get_letra(output[i, :])
+        array_esperado = np.append(array_esperado, valorEsperado)
+        array_previsto = np.append(array_previsto, valorPrevisto)
+        print("Linha {}: Letra esperada[{}], Letra prevista: [{}]".format(i+1, valorEsperado, valorPrevisto))
         # Usando uma compreensão de lista para formatar os floats
         outtput_formatado = ["{:.5f}".format(num) for num in output[i, :]]
-        file.write("Linha {}: Letra esperada[{}], Letra prevista: [{}], Valor Previsto: [{}] \n".format(i+1, get_letra(Yteste[i, :]), get_letra(output[i, :]), outtput_formatado))
+        file.write("Linha {}: Letra esperada[{}], Letra prevista: [{}], Valor Previsto: [{}] \n".format(i+1, valorEsperado, valorPrevisto, outtput_formatado))
         print()
+
+# Calcular a matriz de confusão
+matriz = confusion_matrix(array_esperado, array_previsto)
+
+print(matriz)

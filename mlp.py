@@ -1,6 +1,7 @@
 import os
 import csv
 import numpy as np
+from sklearn.metrics import confusion_matrix
 
 # Abrir o arquivo CSV e ler os dados
 with open('caracteres-Fausett/limpo_e_ruido1.csv', 'r', encoding='utf-8-sig') as file:
@@ -132,12 +133,23 @@ np.savetxt("pesos2FinaisMlp.txt", pesos2, delimiter=',', fmt='%.3f')
 layer1_output = sigmoid(np.dot(Xteste, pesos1))
 output = sigmoid(np.dot(layer1_output, pesos2))
 
+#Variáveis para criar matriz de confusão
+array_esperado = np.array([])
+array_previsto = np.array([])
+
 # Escrever os pesos finais em um arquivo de texto
 with open('saidaMlp.txt', 'w') as file:
     print()
     for i in range(Xteste.shape[0]):
         valorEsperado = get_letra(Yteste[i, :])
         valorPrevisto = get_letra(output[i, :])
+        array_esperado = np.append(array_esperado, valorEsperado)
+        array_previsto = np.append(array_previsto, valorPrevisto)
         print("Linha {}: Valor esperado[{}], Valor previsto: [{}], Correto?{} | {}".format(i+1, valorEsperado, valorPrevisto, (valorEsperado==valorPrevisto), output[i, :]))
         file.write("Linha {}: Valor esperado[{}], Valor previsto: [{}], Correto?{} | {} \n".format(i+1, valorEsperado, valorPrevisto, (valorEsperado==valorPrevisto), output[i, :]))
         print()
+
+# Calcular a matriz de confusão
+matriz = confusion_matrix(array_esperado, array_previsto)
+
+print(matriz)
